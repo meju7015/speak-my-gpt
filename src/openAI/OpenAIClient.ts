@@ -13,6 +13,10 @@ class OpenAIClient {
         this.client = new OpenAIApi(this.config);
     }
 
+    /**
+     * OpenAIClient 는 각각의 채팅 세션을 갖으므로 다른 세션을 열려면
+     * 새로운 인스턴스를 생성해야 합니다.
+     */
     static getChannel() {
         return new OpenAIClient();
     }

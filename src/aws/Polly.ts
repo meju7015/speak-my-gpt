@@ -20,6 +20,11 @@ class PollyService {
         })
     }
 
+    /**
+     * 텍스트를 mp3로 변환
+     * 
+     * @param params
+     */
     async synthesizeSpeech(params: SynthesizeSpeechInput): Promise<string | undefined> {
         try {
             const response = await this.polly.send(new SynthesizeSpeechCommand(params));

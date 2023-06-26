@@ -5,6 +5,12 @@ import {IncomingMessage} from "http";
 class ChatGPT extends OpenAIClient {
     private messages: Array<ChatCompletionRequestMessage> = [];
 
+    /**
+     * 스트림 방식으로 응답
+     *
+     * @param message
+     * @param options
+     */
     async stream(message: string, options = { model: 'gpt-3.5-turbo' }): Promise<IncomingMessage|null> {
         try {
             const newMessage: ChatCompletionRequestMessage = { role: 'user', content: message };
@@ -28,6 +34,12 @@ class ChatGPT extends OpenAIClient {
         }
     }
 
+    /**
+     * API 응답 방식
+     *
+     * @param message
+     * @param options
+     */
     async chat(message: string, options = { model: 'gpt-3.5-turbo' }): Promise<CreateChatCompletionResponse | null> {
         try {
             const newMessage: ChatCompletionRequestMessage = { role: 'user', content: message };

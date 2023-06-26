@@ -1,6 +1,7 @@
 import fs from 'fs';
 import {record, Recording} from 'node-record-lpcm16';
 
+// TODO :: 테스트 필요
 class Recorder {
     private readonly recordingFile: string;
     private recorder: Recording | null;
