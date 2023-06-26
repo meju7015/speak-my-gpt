@@ -1,8 +1,12 @@
 import * as dotenv from 'dotenv';
-import SpeechToText from "./openAI/SpeechToText";
-import ChatGPT from "./openAI/ChatGPT";
 
 dotenv.config();
+
+import SpeechToText from "./openAI/SpeechToText";
+import ChatGPT from "./openAI/ChatGPT";
+import PollyService from "./AWS/Polly";
+import PlaySound from "play-sound";
+
 
 async function speachAndChat() {
     const stt = new SpeechToText();
@@ -20,6 +24,7 @@ async function speachAndChat() {
 
 async function chatSample(prompt: string) {
     const gpt = new ChatGPT();
+    const player = PlaySound({});
 
     console.time('chat-api');
     const response = await gpt.chat(prompt);
@@ -27,7 +32,62 @@ async function chatSample(prompt: string) {
 
     if (response?.choices?.[0].message) {
         console.log(response?.choices?.[0].message);
+
+        const pollyService = new PollyService();
+
+        const mp3 = await pollyService.synthesizeSpeech({
+            Text: response.choices[0].message.content,
+            OutputFormat: 'mp3',
+            VoiceId: 'Seoyeon',
+        });
+
+
+        if (mp3) {
+            player.play(mp3, (err) => {
+                if (err) {
+                    console.error('Could not play sound: ', err);
+                }
+            })
+        }
+
+        return;
     }
+}
+
+async function streamChatSample(prompt: string) {
+    const gpt = new ChatGPT();
+    const player = PlaySound({});
+    const words: string[] = [];
+
+    console.time('chat-api');
+    await gpt.stream(prompt).then((response) => {
+        console.timeEnd('chat-api');
+
+        if (response) {
+            response.on('data', (chunk) => {
+                const payloads = chunk.toString().split('\n\n');
+                for (const payload of payloads) {
+                    if (payload.includes('[DONE]')) return;
+                    if (payload.startsWith('data:')) {
+                        const data = JSON.parse(payload.replace('data: ',  ''));
+                        try {
+                            const chunk: undefined | string = data.choices[0].delta?.content;
+                            if (chunk) {
+                                words.push(chunk);
+                            }
+                        } catch(err) {
+                            console.error(err);
+                        }
+                    }
+                }
+
+            });
+
+            response.on('end', () => {
+               console.log(words);
+            });
+        }
+    });
 }
 
 chatSample(process.argv[2]);

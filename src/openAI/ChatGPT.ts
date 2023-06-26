@@ -1,10 +1,34 @@
 import OpenAIClient from "./OpenAIClient";
-import {ChatCompletionRequestMessage} from "openai/api";
+import {ChatCompletionRequestMessage, CreateChatCompletionResponse} from "openai/api";
+import {IncomingMessage} from "http";
 
 class ChatGPT extends OpenAIClient {
     private messages: Array<ChatCompletionRequestMessage> = [];
 
-    async chat(message: string, options = { model: 'gpt-3.5-turbo' }) {
+    async stream(message: string, options = { model: 'gpt-3.5-turbo' }): Promise<IncomingMessage|null> {
+        try {
+            const newMessage: ChatCompletionRequestMessage = { role: 'user', content: message };
+            const messages: Array<ChatCompletionRequestMessage> = [
+                ...this.messages,
+                newMessage,
+            ];
+
+            const response = await this.client.createChatCompletion({
+                ...options,
+                messages,
+                stream: true,
+            }, {
+                responseType: 'stream'
+            });
+
+            return response.data as unknown as IncomingMessage;
+        } catch (err) {
+            console.error('exception request error ::', err);
+            return null;
+        }
+    }
+
+    async chat(message: string, options = { model: 'gpt-3.5-turbo' }): Promise<CreateChatCompletionResponse | null> {
         try {
             const newMessage: ChatCompletionRequestMessage = { role: 'user', content: message };
             const messages: Array<ChatCompletionRequestMessage> = [
