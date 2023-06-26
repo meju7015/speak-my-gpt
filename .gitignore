@@ -1,5 +1,5 @@
 .env
-.bin
+bin
 node_modules
 .idea
 yarn-error.log
