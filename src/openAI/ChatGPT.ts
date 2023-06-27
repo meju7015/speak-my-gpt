@@ -1,6 +1,8 @@
 import OpenAIClient from "./OpenAIClient";
 import {ChatCompletionRequestMessage, CreateChatCompletionResponse} from "openai/api";
 import {IncomingMessage} from "http";
+import {ChatCompletionFunctions} from "openai";
+import {inspect} from "util";
 
 class ChatGPT extends OpenAIClient {
     private messages: Array<ChatCompletionRequestMessage> = [];
@@ -34,6 +36,35 @@ class ChatGPT extends OpenAIClient {
         }
     }
 
+    async functionChat(messages: ChatCompletionRequestMessage[], functions: ChatCompletionFunctions[]) {
+        try {
+            const response = await this.client.createChatCompletion({
+                model: 'gpt-3.5-turbo-0613',
+                messages: messages,
+                functions: functions,
+                function_call: 'auto',
+            });
+
+            return response;
+        } catch(err) {
+            console.error(err);
+        }
+    }
+
+    async chatRaw(messages: ChatCompletionRequestMessage[], options = { model: 'gpt-3.5-turbo' }): Promise<CreateChatCompletionResponse | null> {
+        try {
+            const response = await this.client.createChatCompletion({
+                ...options,
+                messages
+            });
+
+            return response.data;
+        } catch (err) {
+            //console.error('exception request error ::', err);
+            return null;
+        }
+    }
+
     /**
      * API 응답 방식
      *
@@ -62,7 +93,7 @@ class ChatGPT extends OpenAIClient {
 
             return response.data;
         } catch (err) {
-            console.error('exception request error ::', err);
+            //console.error('exception request error ::', err);
             return null;
         }
     }

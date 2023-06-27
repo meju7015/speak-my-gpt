@@ -1,0 +1,13 @@
+version: '3'
+services:
+  slack-bot:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      REDIS_HOST: redis
+  redis:
+    ports:
+      - "6379:6379"
+    image: "redis:alpine"
